@@ -116,12 +116,14 @@ export function validModifiersForSlot(state: ElixirState, slot: number) {
     })
 }
 
-export function generateModifiers(state: ElixirState) {
+export function generateModifiers(state: ElixirState, is_reroll = false) {
   const used = new Set<number>()
   return [0, 1, 2].map((slot) => {
     const mods = validModifiersForSlot(state, slot).filter(
-      (id) => !used.has(id)
+      (id) =>
+        !used.has(id) && !(is_reroll && id === state.context.modifiers[slot])
     )
+    console.log(mods, [...state.context.modifiers])
     if (!mods.length)
       throw Error(
         `no modifiers for slot ${slot}\nstate:\n${JSON.stringify(
@@ -344,7 +346,7 @@ export function stateRerollOptions(state: ElixirState) {
   state = { ...state }
   state.rerolls -= 1
   if (state.effects.length >= 5) {
-    state.context = createStepContext(generateModifiers(state))
+    state.context = createStepContext(generateModifiers(state, true))
   } else {
     state.context = createStepContext(generateEffectOptions(state))
   }
